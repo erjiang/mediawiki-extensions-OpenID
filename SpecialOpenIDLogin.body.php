@@ -572,7 +572,7 @@ class SpecialOpenIDLogin extends SpecialOpenID {
 	 * form
 	 */
 	function finish() {
-		global $wgOut, $wgUser, $wgOpenIDUseEmailAsNickname;
+		global $wgOut, $wgUser, $wgOpenIDUseEmailAsNickname, $wgOpenIDAllowedDomains;
 
 		wfSuppressWarnings();
 		$consumer = $this->getConsumer();
@@ -617,6 +617,14 @@ class SpecialOpenIDLogin extends SpecialOpenID {
 			}
 			wfRestoreWarnings();
 
+			if ( isset($wgOpenIDAllowedDomains) ) {
+			    $domain = $this->getDomainFromEmail( $openid, $sreg, $ax );
+			    if ( !in_array($domain, $wgOpenIDAllowedDomains) ) {
+				$wgOut->showErrorPage( 'openidfailure', 'openidfailuretext',
+				    array( "This domain not allowed to login" ));
+				return;
+			    }
+			}
 			if ( is_null( $openid ) ) {
 				wfDebug( "OpenID: aborting in auth success because identity URL is missing\n" );
 				$wgOut->showErrorPage( 'openiderror', 'openiderrortext' );
@@ -947,6 +955,24 @@ class SpecialOpenIDLogin extends SpecialOpenID {
 
 		}
 
+	}
+
+	function getDomainFromEmail( $openid, $sreg, $ax ) {
+		# return the part after the @ in the e-mail address
+		# look first at SREG, then AX
+		if ( array_key_exists( 'email', $sreg ) ) {
+			$addr = explode( "@", $sreg['email'] );
+			if ( $addr ) {
+				return $addr[1];
+			}
+		}
+
+		if ( isset( $ax['http://axschema.org/contact/email'][0] ) ) {
+			$addr = explode( "@", $ax['http://axschema.org/contact/email'][0] );
+			if ( $addr ) {
+				return $addr[1];
+			}
+		}
 	}
 
 	/**

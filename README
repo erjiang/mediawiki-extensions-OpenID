@@ -357,6 +357,13 @@ LocalSettings.php file. Please read carefully.
   brand issues. With this enabled, users will see button graphics
   instead of just links in OpenID provider UI.
 
+* $wgOpenIDAllowedDomains
+  -- An array of domains that are allowed to login. If this is set, then the
+  user's email's domain must be in the list. Note that this is not secure unless
+  used in conjunction with $wgOpenIDForcedProvider or $wgOpenIDProviders to
+  whitelist trusted OpenID providers.
+
+
 == Setups of standard scenarios ==
 This section shows some settings for typical applications.
 
